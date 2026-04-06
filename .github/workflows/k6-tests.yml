@@ -59,3 +59,7 @@ jobs:
       # Крок 9: Запуск Load Test
       - name: Run Load Test
         run: k6 run tests/load-test.js
+
+      # Крок 10: Запуск Stress Test
+      - name: Run Stress Test
+        run: k6 run tests/stress-test.js
