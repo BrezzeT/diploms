@@ -1,12 +1,13 @@
-name: K6 Load Testing (Bun + MongoDB)
+name: K6 Навантажувальне Тестування
 
 on: [push, pull_request]
 
 jobs:
   k6_test:
-    name: Run k6 Performance Tests
+    name: Запуск тестів продуктивності
     runs-on: ubuntu-latest
-    # База Даних
+
+    # Конфігурація бази даних MongoDB
     services:
       mongodb:
         image: mongo:latest
@@ -14,33 +15,49 @@ jobs:
           - 27017:27017
 
     steps:
+      # Крок 1: Отримання коду з репозиторію
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # Крок 2: Встановлення середовища Bun
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
+      # Крок 3: Встановлення залежностей проєкту
       - name: Install Dependencies
         run: bun install
 
+      # Крок 4: Збірка проєкту (Next.js)
       - name: Build Next.js app
         run: bun run build
         env:
-          # MONGO_URI
           MONGO_URI: "mongodb://localhost:27017/dimploms"
 
+      # Крок 5: Запуск сервера
       - name: Start Next.js Server
         run: bun run start &
         env:
           NODE_ENV: production
           MONGO_URI: "mongodb://localhost:27017/dimploms"
 
+      # Крок 6: Очікування, поки сервер підніметься
       - name: Wait for server to be ready
         run: npx wait-on http://localhost:3000/catalog --timeout 120000
 
-      - name: Run Smoke Test with k6
-        uses: grafana/k6-action@v0.3.1
-        with:
-          filename: tests/smoke-test.js
+      # Крок 7: Встановлення k6
+      - name: Install k6
+        run: |
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      # Крок 8: Запуск Smoke Test
+      - name: Run Smoke Test
+        run: k6 run tests/smoke-test.js
+
+      # Крок 9: Запуск Load Test
+      - name: Run Load Test
+        run: k6 run tests/load-test.js
