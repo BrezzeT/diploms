@@ -1,4 +1,4 @@
-import { Search, Image as ImageIcon, ShoppingCart } from "lucide-react";
+import { Search } from "lucide-react";
 import { getProducts } from "@/lib/actions/product";
 import Filter, { FilterButton } from "@/components/Catalog/Filter";
 import ProductList from "@/components/Product/ProductList";
@@ -11,7 +11,7 @@ export default async function CatalogPage() {
           <div className="flex flex-col gap-1 w-full md:w-auto md:text-left">
             <h3 className="text-2xl font-bold tracking-tight">Каталог</h3>
             <p className="text-sm text-emerald-50 font-medium">
-              Вибирайте найкращі пристрої для себе
+              Вибирайте найкращі пристрої для себе!
             </p>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">

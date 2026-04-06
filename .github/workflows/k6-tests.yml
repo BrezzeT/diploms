@@ -63,3 +63,7 @@ jobs:
       # Крок 10: Запуск Stress Test
       - name: Run Stress Test
         run: k6 run tests/stress-test.js
+
+      # Крок 11: Запуск Multi-Page Test
+      - name: Run Multi-Page Test
+        run: k6 run tests/multi-page-test.js
