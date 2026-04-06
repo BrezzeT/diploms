@@ -1,0 +1,45 @@
+name: K6 Load Testing (Bun)
+
+on: [push, pull_request]
+
+jobs:
+  k6_test:
+    name: Run k6 Performance Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Build Next.js app
+        run: bun run build
+        env:
+          DATABASE_URL: "mongodb://localhost:27017/dimploms"
+
+      - name: Start Next.js Server
+        # Використовуємо bun run start для швидкості та стабільності в CI
+        run: bun run start &
+        env:
+          NODE_ENV: production
+          DATABASE_URL: "mongodb://localhost:27017/test"
+
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:3000/catalog --timeout 60000
+
+      - name: Run Smoke Test with k6
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/smoke-test.js
+
+      - name: Run Load Test with k6
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/load-test.js
