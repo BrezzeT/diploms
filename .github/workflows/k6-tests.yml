@@ -6,8 +6,7 @@ jobs:
   k6_test:
     name: Run k6 Performance Tests
     runs-on: ubuntu-latest
-
-    # Додаємо підтримку Бази Даних прямо в хмарі!
+    # База Даних
     services:
       mongodb:
         image: mongo:latest
@@ -29,14 +28,14 @@ jobs:
       - name: Build Next.js app
         run: bun run build
         env:
-          # Тепер база точно буде доступна за цією адресою
-          DATABASE_URL: "mongodb://localhost:27017/test"
+          # MONGO_URI
+          MONGO_URI: "mongodb://localhost:27017/dimploms"
 
       - name: Start Next.js Server
         run: bun run start &
         env:
           NODE_ENV: production
-          DATABASE_URL: "mongodb://localhost:27017/test"
+          MONGO_URI: "mongodb://localhost:27017/dimploms"
 
       - name: Wait for server to be ready
         run: npx wait-on http://localhost:3000/catalog --timeout 120000
