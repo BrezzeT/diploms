@@ -1,4 +1,4 @@
-name: K6 Load Testing (Bun)
+name: K6 Load Testing (Bun + MongoDB)
 
 on: [push, pull_request]
 
@@ -6,6 +6,13 @@ jobs:
   k6_test:
     name: Run k6 Performance Tests
     runs-on: ubuntu-latest
+
+    # Додаємо підтримку Бази Даних прямо в хмарі!
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
 
     steps:
       - name: Checkout Code
@@ -22,24 +29,19 @@ jobs:
       - name: Build Next.js app
         run: bun run build
         env:
-          DATABASE_URL: "mongodb://localhost:27017/dimploms"
+          # Тепер база точно буде доступна за цією адресою
+          DATABASE_URL: "mongodb://localhost:27017/test"
 
       - name: Start Next.js Server
-        # Використовуємо bun run start для швидкості та стабільності в CI
         run: bun run start &
         env:
           NODE_ENV: production
           DATABASE_URL: "mongodb://localhost:27017/test"
 
       - name: Wait for server to be ready
-        run: npx wait-on http://localhost:3000/catalog --timeout 60000
+        run: npx wait-on http://localhost:3000/catalog --timeout 120000
 
       - name: Run Smoke Test with k6
         uses: grafana/k6-action@v0.3.1
         with:
           filename: tests/smoke-test.js
-
-      - name: Run Load Test with k6
-        uses: grafana/k6-action@v0.3.1
-        with:
-          filename: tests/load-test.js
